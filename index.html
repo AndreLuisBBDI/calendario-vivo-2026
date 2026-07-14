@@ -671,8 +671,8 @@ document.getElementById("npart").oninput=function(){
 };
 
 /* ===== persistência: Supabase (compartilhado entre gestores) com fallback localStorage ===== */
-const SUPABASE_URL = "";      // PASSO 3 do README: cole aqui a URL do projeto (https://xxxx.supabase.co)
-const SUPABASE_ANON_KEY = ""; // PASSO 3 do README: cole aqui a chave "anon public"
+const SUPABASE_URL = "https://orrkjwchepxaqejkvbrh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ycmtqd2NoZXB4YXFlamt2YnJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5OTk5OTksImV4cCI6MjA5OTU3NTk5OX0.AwngDFlMCu-PEXDurpu4LzTWH1pOvKpbfMpLMgNiCpM";
 let sb = null;
 if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
