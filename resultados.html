@@ -17,9 +17,7 @@ h1{font-size:clamp(24px,4vw,34px);letter-spacing:-.01em}
 h1 span{color:var(--green-dark)}
 header p{color:var(--muted);font-size:14px;margin-top:6px}
 .toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px 0 22px}
-select,button.refresh{border:1.5px solid var(--line);border-radius:12px;padding:9px 14px;font-size:13.5px;background:#fff;color:var(--ink);font-weight:600;cursor:pointer}
-button.refresh{background:var(--ink);color:#fff;border-color:var(--ink)}
-button.refresh:hover{background:var(--petrol)}
+select{border:1.5px solid var(--line);border-radius:12px;padding:9px 14px;font-size:13.5px;background:#fff;color:var(--ink);font-weight:600;cursor:pointer}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center;box-shadow:0 2px 10px rgba(13,46,51,.06)}
 .kpi b{font-size:30px;display:block;color:var(--petrol)}
@@ -67,7 +65,6 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
     <option value="media">Notas 5–7</option>
     <option value="baixa">Notas 0–4</option>
   </select>
-  <button class="refresh" id="btnRefresh">↻ Atualizar</button>
   <span id="live" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:700">
     <span id="liveDot" style="width:9px;height:9px;border-radius:50%;background:#b6c8ca"></span><span id="liveTxt">conectando…</span>
   </span>
@@ -166,7 +163,6 @@ async function carregar(){
   popularFiltros(); render();
 }
 ["fEvento","fSetor","fNota"].forEach(id=>document.getElementById(id).onchange=render);
-document.getElementById("btnRefresh").onclick=carregar;
 
 function setLive(ok, txt){
   document.getElementById("liveDot").style.background = ok ? "var(--green)" : "#b6c8ca";
