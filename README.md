@@ -1,5 +1,7 @@
 # Calendário Vivo 2026 · Grupo BBDI
 
+🌐 **Produção:** https://calendario-vivo-bbdi.netlify.app · 📱 **Avaliação (QR):** https://calendario-vivo-bbdi.netlify.app/avaliar.html
+
 Site de endomarketing com todos os feriados 2026 (nacionais, RS e Porto Alegre),
 campanhas de integração entre setores, calculadora de custos e checklist do RH.
 
@@ -9,7 +11,7 @@ Arquitetura: `index.html` único · Netlify (publish = ".", sem build) · Supaba
 
 ## PASSO 1 — GitHub (2 min)
 1. github.com > **New repository** > nome: `calendario-vivo-2026` > Public > Create.
-2. **Add file > Upload files** > arraste `index.html`, `netlify.toml`, `supabase.sql`, `README.md`.
+2. **Add file > Upload files** > arraste `index.html`, `avaliar.html`, `netlify.toml`, `supabase.sql`, `supabase-avaliacoes.sql`, `README.md`.
 3. **Commit changes**.
 
 ## PASSO 2 — Netlify (2 min)
@@ -17,7 +19,7 @@ Arquitetura: `index.html` único · Netlify (publish = ".", sem build) · Supaba
 2. Selecione o repositório `calendario-vivo-2026`.
 3. Build command: **(vazio)** · Publish directory: **.** (o netlify.toml já garante isso).
 4. **Deploy**. O site já fica no ar e 100% funcional (salvamento local por navegador).
-5. Opcional: Site settings > Change site name > `grupobbdi-calendario2026`.
+5. Site no ar em: **https://calendario-vivo-bbdi.netlify.app**
 
 ## PASSO 3 — Supabase (5 min) — ativa o checklist COMPARTILHADO
 1. supabase.com > **New project** (nome: `bbdi-endomarketing`) > aguarde provisionar.
