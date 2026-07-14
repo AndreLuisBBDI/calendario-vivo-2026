@@ -119,15 +119,16 @@ header.hero{
 .month-chip:focus-visible,.pill:focus-visible,button:focus-visible{outline:3px solid var(--green);outline-offset:2px}
 
 /* ===== filtros ===== */
-.filters{max-width:1120px;margin:20px auto 0;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters{max-width:1120px;margin:20px auto 0;padding:0 24px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .pill{
   border:1.5px solid var(--line);background:var(--card);border-radius:99px;
-  padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);
+  padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink);
   transition:all .15s;font-family:'Instrument Sans';display:inline-flex;align-items:center;gap:7px;
 }
 .pill .sw{width:9px;height:9px;border-radius:50%}
 .pill:hover{border-color:var(--petrol)}
 .pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pill.toggle-fds{margin-left:auto}
 .pill.toggle-fds.on{background:var(--amber);border-color:var(--amber);color:var(--ink)}
 
 /* ===== grid de eventos ===== */
@@ -322,7 +323,7 @@ footer img{height:34px;vertical-align:middle;margin:0 8px;border-radius:8px;back
   <button class="pill" data-type="municipal"><span class="sw dot mun"></span>Municipal POA</button>
   <button class="pill" data-type="facultativo"><span class="sw dot fac"></span>Ponto facultativo</button>
   <button class="pill" data-type="comemorativa"><span class="sw dot com"></span>Data comemorativa</button>
-  <button class="pill toggle-fds" id="fdsToggle">⚠ Só os que caem no fim de semana</button>
+  <button class="pill toggle-fds" id="fdsToggle" title="Mostrar apenas as datas que caem no sábado ou domingo">⚠ Só fim de semana</button>
 </div>
 
 <main>
