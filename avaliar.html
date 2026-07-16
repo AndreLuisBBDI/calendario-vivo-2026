@@ -102,13 +102,7 @@ document.getElementById("enviar").onclick = async function(){
   }
   document.getElementById("form").style.display="none";
   document.getElementById("thanks").style.display="block";
-  try{
-    const {data}=await sb.from("avaliacoes").select("nota").eq("evento",registro.evento);
-    if(data&&data.length){
-      const m=(data.reduce((s,r)=>s+r.nota,0)/data.length).toFixed(1);
-      document.getElementById("media").innerHTML=`Média deste evento até agora: <b>${m}</b> · ${data.length} avaliação(ões)`;
-    }
-  }catch(e){}
+  document.getElementById("media").innerHTML=`Sua nota foi registrada e já entrou no painel do RH em tempo real. 💚`;
 };
 </script>
 </body>
