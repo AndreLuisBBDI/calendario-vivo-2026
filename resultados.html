@@ -327,15 +327,27 @@ function renderRanking(){
 /* ===== CONTROLE DE VOTAÇÃO (RH) ===== */
 let CONFIG_VOT={};
 function fmtQuando(iso){ if(!iso) return "sem data"; return new Date(iso).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+const EVENTOS_CALENDARIO=[
+  "Bora 2026 (jan)","Remando Juntos — Navegantes (jan)","Esquenta BBDI Folia — Carnaval (fev)",
+  "Elas Movem o Grupo — Dia da Mulher (mar)","Caça aos Ovos — Páscoa (abr)","Quiz Brasil — Tiradentes (abr)",
+  "Mãos que Movem — Dia do Trabalhador (abr)","Mães do Grupo (mai)","Tapete Solidário — Corpus Christi (jun)",
+  "Arraiá do Grupo BBDI (jun)","Pais do Grupo (ago)","Independência das Ideias (set)",
+  "Semana Farroupilha + Mateada (set)","Criança Interior (out)","Raízes que Movem — Consciência Negra (nov)",
+  "Confraternização de Natal (dez)","Aniversariantes do Mês"
+];
+function listaEventos(){
+  const eventos=[...EVENTOS_CALENDARIO];
+  [...new Set(DADOS.map(r=>r.evento))].forEach(e=>{if(e && !eventos.includes(e))eventos.push(e)});
+  Object.keys(CONFIG_VOT||{}).forEach(e=>{if(!eventos.includes(e))eventos.push(e)});
+  return eventos;
+}
 async function carregarConfigVotacao(){
   try{
     const {data}=await sb.from("votacao_config").select("*");
     CONFIG_VOT={}; (data||[]).forEach(c=>CONFIG_VOT[c.evento]=c);
   }catch(e){}
   const s=document.getElementById("cvEvento");
-  const eventos=[...new Set(DADOS.map(r=>r.evento))];
-  Object.keys(CONFIG_VOT).forEach(e=>{if(!eventos.includes(e))eventos.push(e)});
-  eventos.sort();
+  const eventos=listaEventos();
   const atual=s.value;
   s.innerHTML='<option value="">Escolha o evento…</option>'+eventos.map(e=>`<option>${escapeHtml(e)}</option>`).join("");
   if([...s.options].some(o=>o.value===atual)) s.value=atual;
@@ -517,8 +529,8 @@ async function carregarModeracao(){
 /* ===== UPLOAD DA GALERIA ===== */
 function popularEventosGaleria(){
   const s=document.getElementById("gEvento");
-  const eventos=[...new Set(DADOS.map(r=>r.evento))].sort();
-  s.innerHTML='<option value="">Evento da foto…</option>'+eventos.map(e=>`<option>${e}</option>`).join("");
+  const eventos=listaEventos();
+  s.innerHTML='<option value="">Evento da foto…</option>'+eventos.map(e=>`<option>${escapeHtml(e)}</option>`).join("");
 }
 document.getElementById("gEnviar").onclick=async()=>{
   const ev=document.getElementById("gEvento").value;
