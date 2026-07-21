@@ -149,8 +149,8 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
 <h2>Notas × comentários <span class="tag">voz do colaborador</span></h2>
 <div class="coments" id="coments"><div class="estado">Carregando…</div></div>
 
-<h2>Gerenciar acessos <span class="tag">admin</span></h2>
-<div class="panel" id="painelUsuarios">
+<h2 id="tituloUsuarios" style="display:none">Gerenciar acessos <span class="tag">admin</span></h2>
+<div class="panel" id="painelUsuarios" style="display:none">
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:14px">
     <div><label style="font-size:12px;font-weight:700;color:var(--petrol);display:block;margin-bottom:4px">E-mail (@bbdi.com.br)</label>
       <input id="uEmail" type="email" placeholder="nome@bbdi.com.br" style="border:1.5px solid var(--line);border-radius:10px;padding:9px;min-width:220px"></div>
@@ -440,7 +440,19 @@ async function chamarFn(payload){
   });
   return r.json();
 }
+async function ehAdminAtual(){
+  try{
+    const email=(await sb.auth.getUser())?.data?.user?.email?.toLowerCase();
+    if(!email) return false;
+    const {data}=await sb.from("admins").select("email").eq("email",email).maybeSingle();
+    return !!data;
+  }catch(e){ return false; }
+}
 async function carregarUsuarios(){
+  const admin = await ehAdminAtual();
+  if(!admin) return; // gestor comum: seção permanece escondida
+  document.getElementById("tituloUsuarios").style.display="";
+  document.getElementById("painelUsuarios").style.display="";
   const el=document.getElementById("uLista");
   try{
     const res=await chamarFn({acao:"listar"});
