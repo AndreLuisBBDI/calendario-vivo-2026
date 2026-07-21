@@ -54,6 +54,7 @@ textarea{resize:vertical;min-height:70px}
     <div class="legenda"><span>😐 0 = fraco</span><span>🤩 10 = incrível</span></div>
     <label for="coment">Comentário (opcional)</label>
     <textarea id="coment" maxlength="300" placeholder="O que manter? O que melhorar?"></textarea>
+    <input type="text" id="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <button class="enviar" id="enviar">Enviar avaliação</button>
     <div class="msg" id="msg"></div>
   </div>
@@ -90,19 +91,31 @@ for(let i=0;i<=10;i++){
   nDiv.appendChild(b);
 }
 
+function jaVotou(ev){try{return localStorage.getItem("voto-"+ev)==="1"}catch(e){return false}}
+function marcaVotou(ev){try{localStorage.setItem("voto-"+ev,"1")}catch(e){}}
+
 document.getElementById("enviar").onclick = async function(){
   const msg=document.getElementById("msg");
   msg.className="msg";
+  // ITEM 7: honeypot — se o campo invisível foi preenchido, é bot
+  if(document.getElementById("website").value){msg.className="msg err";msg.textContent="Não foi possível registrar.";return}
   if(nota===null){msg.className="msg err";msg.textContent="Escolha uma nota de 0 a 10.";return}
+  // ITEM 1: um voto por evento por aparelho
+  if(jaVotou(sel.value)){msg.className="msg err";msg.textContent="Você já avaliou este evento neste aparelho. Obrigado! 💚";return}
   if(!sb){msg.className="msg err";msg.textContent="Sem conexão com o banco. Tente novamente.";return}
   this.disabled=true;this.textContent="Enviando...";
   const registro={evento:sel.value,setor:document.getElementById("setor").value,nota,comentario:document.getElementById("coment").value.trim()||null};
   const {error}=await sb.from("avaliacoes").insert(registro);
   if(error){
     this.disabled=false;this.textContent="Enviar avaliação";
-    msg.className="msg err";msg.textContent="Não foi possível enviar. Verifique a internet e tente de novo.";
+    msg.className="msg err";
+    const m=(error.message||"").toLowerCase();
+    if(m.includes("encerrada")||m.includes("não abriu")||m.includes("nao abriu")) msg.textContent="A votação deste evento não está aberta no momento.";
+    else if(m.includes("muitas")) msg.textContent="Muitos envios agora há pouco. Aguarde alguns segundos e tente de novo.";
+    else msg.textContent="Não foi possível enviar. Verifique a internet e tente de novo.";
     return;
   }
+  marcaVotou(registro.evento);
   document.getElementById("form").style.display="none";
   document.getElementById("thanks").style.display="block";
   document.getElementById("media").innerHTML=`Sua nota foi registrada e já entrou no painel do RH em tempo real. 💚`;
