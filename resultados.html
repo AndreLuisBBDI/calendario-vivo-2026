@@ -123,6 +123,9 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
 <h2>Média por setor <span class="tag">participação</span></h2>
 <div class="panel" id="porSetor"><div class="estado">Carregando…</div></div>
 
+<h2>Frequência de votos <span class="tag">por dia</span></h2>
+<div class="panel" id="frequencia"><div class="estado">Carregando…</div></div>
+
 <h2>Evolução das notas <span class="tag">comparativo de eventos</span></h2>
 <div class="panel" id="comparativo"><div class="estado">Carregando…</div></div>
 
@@ -219,13 +222,13 @@ function render(){
     <div class="kpi ${(e_.valor??-100)>=30?'green':''}"><b>${e_.valor==null?"—":e_.valor}</b><span>eNPS ${e_.tri||""} · ${e_.n||0} resp.</span></div>`;
   barras(document.getElementById("porEvento"), grupo(rows,"evento"));
   barras(document.getElementById("porSetor"), grupo(rows,"setor"));
-  renderRanking(); renderCustos(); renderComparativo(); checarAnomalias(rows);
+  renderRanking(); renderCustos(); renderComparativo(); renderFrequencia(); checarAnomalias(rows);
   const cm = rows.filter(r=>r.comentario && r.comentario.trim())
     .sort((a,b)=> new Date(b.criado_em)-new Date(a.criado_em));
   document.getElementById("coments").innerHTML = cm.length ? cm.map(r=>`
     <div class="coment ${faixa(r.nota)==='alta'?'':faixa(r.nota)}">
       <div class="meta"><span class="nota">Nota ${r.nota}</span><span>${r.evento}</span><span>${r.setor||"—"}</span>
-      <span>${new Date(r.criado_em).toLocaleDateString("pt-BR")}</span></div>
+      <span>${new Date(r.criado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></div>
       ${escapeHtml(r.comentario)}
     </div>`).join("")
     : '<div class="estado">Nenhum comentário para esses filtros — só notas.</div>';
@@ -549,6 +552,35 @@ document.getElementById("gEnviar").onclick=async()=>{
 };
 
 /* ===== B: COMPARATIVO ENTRE EVENTOS ===== */
+function renderFrequencia(){
+  const el=document.getElementById("frequencia");
+  const rows=filtrados();
+  if(!rows.length){el.innerHTML='<div class="estado">Ainda sem votos para mostrar a frequência.</div>';return}
+  // agrupa por dia (data local pt-BR)
+  const porDia={};
+  rows.forEach(r=>{
+    const d=new Date(r.criado_em);
+    const chave=d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+    porDia[chave]=(porDia[chave]||0)+1;
+  });
+  // ordena cronologicamente
+  const dias=Object.keys(porDia).sort((a,b)=>{
+    const [da,ma]=a.split("/"), [db,mb]=b.split("/");
+    return new Date(2026,ma-1,da)-new Date(2026,mb-1,db);
+  });
+  const max=Math.max(...Object.values(porDia));
+  const total=rows.length;
+  el.innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:12px">Total de '+total+' voto(s) · pico de '+max+' em um dia</div>'+
+    '<div style="display:flex;gap:12px;align-items:flex-end;height:170px;padding:6px 4px;overflow-x:auto">'+
+    dias.map(dia=>{
+      const n=porDia[dia];
+      const alt=Math.max(6,Math.round(n/max*140));
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:56px">
+        <b style="font-size:15px;color:var(--petrol)">${n}</b>
+        <div style="width:38px;height:${alt}px;background:linear-gradient(180deg,var(--green),var(--petrol));border-radius:8px 8px 0 0;transition:height .4s"></div>
+        <span style="font-size:11px;color:var(--muted);font-weight:600">${dia}</span></div>`;
+    }).join("")+'</div>';
+}
 function renderComparativo(){
   const el=document.getElementById("comparativo");
   const g={};
