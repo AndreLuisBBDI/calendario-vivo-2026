@@ -149,6 +149,19 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
 <h2>Notas × comentários <span class="tag">voz do colaborador</span></h2>
 <div class="coments" id="coments"><div class="estado">Carregando…</div></div>
 
+<h2>Gerenciar acessos <span class="tag">admin</span></h2>
+<div class="panel" id="painelUsuarios">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:14px">
+    <div><label style="font-size:12px;font-weight:700;color:var(--petrol);display:block;margin-bottom:4px">E-mail (@bbdi.com.br)</label>
+      <input id="uEmail" type="email" placeholder="nome@bbdi.com.br" style="border:1.5px solid var(--line);border-radius:10px;padding:9px;min-width:220px"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--petrol);display:block;margin-bottom:4px">Senha (mín. 8)</label>
+      <input id="uSenha" type="text" placeholder="senha inicial" style="border:1.5px solid var(--line);border-radius:10px;padding:9px;min-width:160px"></div>
+    <button id="uCriar" style="background:var(--green-dark);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer">+ Criar acesso</button>
+  </div>
+  <div id="uStatus" style="font-size:13px;font-weight:600;margin-bottom:10px"></div>
+  <div id="uLista"><div class="estado">Carregando usuários…</div></div>
+</div>
+
 <center><a class="volta" href="index.html">← Voltar ao Calendário Vivo 2026</a> &nbsp;·&nbsp; <a class="volta" href="#" id="sair">Sair</a></center>
 </div>
 
@@ -416,6 +429,46 @@ function checarAnomalias(rows){
   }
 }
 
+/* ===== GESTÃO DE USUÁRIOS (via Edge Function segura) ===== */
+const FN_URL = SUPABASE_URL + "/functions/v1/gerenciar-usuarios";
+async function chamarFn(payload){
+  const {data:{session}} = await sb.auth.getSession();
+  const r = await fetch(FN_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+(session?.access_token||"") },
+    body: JSON.stringify(payload)
+  });
+  return r.json();
+}
+async function carregarUsuarios(){
+  const el=document.getElementById("uLista");
+  try{
+    const res=await chamarFn({acao:"listar"});
+    if(res.error){el.innerHTML='<div class="estado">Não foi possível listar ('+escapeHtml(res.error)+'). Verifique o deploy da Edge Function.</div>';return}
+    let meu=null; try{ const gu=await sb.auth.getUser(); meu=gu?.data?.user?.id||null; }catch(e){}
+    el.innerHTML=(res.users||[]).map(u=>`<div class="rank-row" style="grid-template-columns:1fr 110px">
+      <div><b>${escapeHtml(u.email)}</b>${u.id===meu?' <span style="font-size:11px;color:var(--muted)">(você)</span>':''}</div>
+      ${u.id===meu?'<span style="font-size:12px;color:var(--muted);text-align:right">—</span>':`<button data-id="${u.id}" data-em="${escapeHtml(u.email)}" class="uRem" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:8px;font-weight:700;cursor:pointer">Remover</button>`}
+    </div>`).join("")||'<div class="estado">Nenhum usuário.</div>';
+    el.querySelectorAll(".uRem").forEach(b=>b.onclick=async()=>{
+      if(!confirm(`Remover o acesso de ${b.dataset.em}?`)) return;
+      b.disabled=true;
+      const res=await chamarFn({acao:"remover",id:b.dataset.id});
+      if(res.error) alert("Erro: "+res.error); else carregarUsuarios();
+    });
+  }catch(e){el.innerHTML='<div class="estado">Edge Function indisponível. Faça o deploy conforme o README.</div>'}
+}
+document.getElementById("uCriar").onclick=async()=>{
+  const st=document.getElementById("uStatus"); st.style.color="var(--muted)"; st.textContent="Criando…";
+  const email=document.getElementById("uEmail").value.trim();
+  const senha=document.getElementById("uSenha").value;
+  const res=await chamarFn({acao:"criar",email,senha});
+  if(res.error){st.style.color="var(--red)";st.textContent=res.error;return}
+  st.style.color="var(--green-dark)";st.textContent="Acesso criado para "+email+" ✓";
+  document.getElementById("uEmail").value=""; document.getElementById("uSenha").value="";
+  carregarUsuarios();
+};
+
 /* ===== eNPS ===== */
 function triAtual(){const d=new Date();return d.getFullYear()+"-Q"+(Math.floor(d.getMonth()/3)+1)}
 async function carregarEnps(){
@@ -550,7 +603,7 @@ if (sb) {
 let painelIniciado=false;
 function iniciarPainel(){
   if(painelIniciado) return; painelIniciado=true;
-  carregar().then(()=>{carregarCustos(); carregarEnps(); carregarModeracao(); popularEventosGaleria(); carregarConfigVotacao(); marcaAtualizado();});
+  carregar().then(()=>{carregarCustos(); carregarEnps(); carregarModeracao(); popularEventosGaleria(); carregarConfigVotacao(); carregarUsuarios(); marcaAtualizado();});
   setInterval(async ()=>{ await carregar(); marcaAtualizado(); }, 15000);
   setInterval(()=>{ if(Object.keys(CONFIG_VOT).length) renderVotacoesAtivas(); }, 1000);
 }
