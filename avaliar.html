@@ -70,12 +70,15 @@ const SUPABASE_URL = "https://orrkjwchepxaqejkvbrh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ycmtqd2NoZXB4YXFlamt2YnJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5OTk5OTksImV4cCI6MjA5OTU3NTk5OX0.AwngDFlMCu-PEXDurpu4LzTWH1pOvKpbfMpLMgNiCpM";
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const EVENTOS = ["Bora 2026 (jan)","Remando Juntos — Navegantes (jan)","Esquenta BBDI Folia — Carnaval (fev)",
-"Elas Movem o Grupo — Dia da Mulher (mar)","Caça aos Ovos — Páscoa (abr)","Quiz Brasil — Tiradentes (abr)",
-"Mãos que Movem — Dia do Trabalhador (abr)","Mães do Grupo (mai)","Tapete Solidário — Corpus Christi (jun)",
-"Arraiá do Grupo BBDI (jun)","Pais do Grupo (ago)","Independência das Ideias (set)",
-"Semana Farroupilha + Mateada (set)","Criança Interior (out)","Raízes que Movem — Consciência Negra (nov)",
-"Confraternização de Natal (dez)","Aniversariantes do Mês","Outro"];
+// Votação aberta apenas para o Arraiá no momento.
+// Para reabrir os demais eventos, basta descomentar a lista completa abaixo.
+const EVENTOS = ["Arraiá do Grupo BBDI (jun)"];
+// const EVENTOS = ["Bora 2026 (jan)","Remando Juntos — Navegantes (jan)","Esquenta BBDI Folia — Carnaval (fev)",
+// "Elas Movem o Grupo — Dia da Mulher (mar)","Caça aos Ovos — Páscoa (abr)","Quiz Brasil — Tiradentes (abr)",
+// "Mãos que Movem — Dia do Trabalhador (abr)","Mães do Grupo (mai)","Tapete Solidário — Corpus Christi (jun)",
+// "Arraiá do Grupo BBDI (jun)","Pais do Grupo (ago)","Independência das Ideias (set)",
+// "Semana Farroupilha + Mateada (set)","Criança Interior (out)","Raízes que Movem — Consciência Negra (nov)",
+// "Confraternização de Natal (dez)","Aniversariantes do Mês","Outro"];
 const sel = document.getElementById("evento");
 EVENTOS.forEach(e=>{const o=document.createElement("option");o.textContent=e;sel.appendChild(o)});
 
@@ -103,7 +106,33 @@ document.getElementById("enviar").onclick = async function(){
   document.getElementById("form").style.display="none";
   document.getElementById("thanks").style.display="block";
   document.getElementById("media").innerHTML=`Sua nota foi registrada e já entrou no painel do RH em tempo real. 💚`;
+  mostrarEnps(registro.setor);
 };
+
+/* ===== eNPS TRIMESTRAL (aparece 1x por trimestre por aparelho) ===== */
+function trimestreAtual(){const d=new Date();return d.getFullYear()+"-Q"+(Math.floor(d.getMonth()/3)+1)}
+function mostrarEnps(setor){
+  const tri=trimestreAtual();
+  try{ if(localStorage.getItem("enps-"+tri)) return; }catch(e){}
+  const box=document.createElement("div");
+  box.className="media";
+  box.innerHTML=`<b style="font-size:15px">Pergunta do trimestre</b><br>
+    <span style="font-size:13.5px;color:var(--muted)">De 0 a 10, quanto você recomendaria a BBDI como lugar para trabalhar?</span>
+    <div class="notas" id="enpsNotas" style="margin-top:10px"></div>
+    <div id="enpsOk" style="display:none;margin-top:8px;font-weight:700;color:var(--green-dark)">Obrigado! Resposta anônima registrada. 💚</div>`;
+  document.getElementById("thanks").appendChild(box);
+  const nd=box.querySelector("#enpsNotas");
+  for(let i=0;i<=10;i++){
+    const b=document.createElement("button");b.type="button";b.textContent=i;
+    b.onclick=async()=>{
+      [...nd.children].forEach(x=>x.disabled=true);b.classList.add("on");
+      try{ await sb.from("enps").insert({nota:i,setor,trimestre:tri}); }catch(e){}
+      try{ localStorage.setItem("enps-"+tri,"1"); }catch(e){}
+      box.querySelector("#enpsOk").style.display="block";
+    };
+    nd.appendChild(b);
+  }
+}
 </script>
 </body>
 </html>
