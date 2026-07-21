@@ -90,6 +90,7 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
       <button id="cvFechar" style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer">■ Encerrar agora</button>
     </div>
     <div id="cvStatus" style="margin-top:10px;font-size:13.5px;font-weight:600"></div>
+    <div id="votacoesAtivas" style="margin-top:14px"></div>
   </div>
   <div id="alertaFraude" style="display:none;background:#fdecec;border:1.5px solid var(--red);color:#b3261e;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-weight:600;font-size:14px"></div>
 <header>
@@ -326,6 +327,7 @@ async function carregarConfigVotacao(){
   s.innerHTML='<option value="">Escolha o evento…</option>'+eventos.map(e=>`<option>${escapeHtml(e)}</option>`).join("");
   if([...s.options].some(o=>o.value===atual)) s.value=atual;
   mostrarStatusVotacao();
+  renderVotacoesAtivas();
 }
 function mostrarStatusVotacao(){
   const ev=document.getElementById("cvEvento").value;
@@ -353,6 +355,36 @@ document.getElementById("cvAbrir").onclick=async()=>{
   CONFIG_VOT[ev]={evento:ev,abre_em:new Date().toISOString(),fecha_em,ativo:true};
   mostrarStatusVotacao();
 };
+function renderVotacoesAtivas(){
+  const el=document.getElementById("votacoesAtivas");
+  const agora=new Date();
+  const ativas=Object.values(CONFIG_VOT).filter(c=>{
+    if(c.ativo===false) return false;
+    if(c.fecha_em && new Date(c.fecha_em) < agora) return false;
+    return true;
+  });
+  if(!ativas.length){
+    el.innerHTML='<div style="background:var(--paper);border-radius:12px;padding:12px;font-size:13px;color:var(--muted);text-align:center">Nenhuma votação em execução no momento. Abra uma acima. ▲</div>';
+    return;
+  }
+  el.innerHTML='<div style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--green-dark);font-weight:800;margin-bottom:8px">🟢 Em execução agora</div>'+
+    ativas.map(c=>{
+      let tempo='sem prazo definido';
+      if(c.fecha_em){
+        const diff=Math.max(0,new Date(c.fecha_em)-agora);
+        const s=Math.floor(diff/1000), d=Math.floor(s/86400), hh=Math.floor(s%86400/3600), mm=Math.floor(s%3600/60), ss=s%60;
+        const p=n=>String(n).padStart(2,"0");
+        tempo=(d>0?d+"d ":"")+p(hh)+":"+p(mm)+":"+p(ss)+" restantes";
+      }
+      const nVotos=DADOS.filter(r=>r.evento===c.evento).length;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#e2f6e3;border:1px solid var(--green);border-radius:12px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap">
+        <div><b style="color:var(--green-dark)">${escapeHtml(c.evento)}</b>
+        <span style="font-size:12px;color:var(--muted);display:block">${nVotos} voto(s) até agora</span></div>
+        <div style="font-family:monospace;font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums">⏱ ${tempo}</div>
+      </div>`;
+    }).join("");
+}
+
 document.getElementById("cvFechar").onclick=async()=>{
   const ev=document.getElementById("cvEvento").value;
   const st=document.getElementById("cvStatus");
@@ -520,6 +552,7 @@ function iniciarPainel(){
   if(painelIniciado) return; painelIniciado=true;
   carregar().then(()=>{carregarCustos(); carregarEnps(); carregarModeracao(); popularEventosGaleria(); carregarConfigVotacao(); marcaAtualizado();});
   setInterval(async ()=>{ await carregar(); marcaAtualizado(); }, 15000);
+  setInterval(()=>{ if(Object.keys(CONFIG_VOT).length) renderVotacoesAtivas(); }, 1000);
 }
 // sessão existente? entra direto; senão, tela de login
 (async ()=>{
