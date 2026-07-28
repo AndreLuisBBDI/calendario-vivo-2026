@@ -149,7 +149,7 @@ a.volta{display:inline-block;margin-top:26px;color:var(--petrol);font-weight:700
   </div>
 </div>
 
-<h2>Notas × comentários <span class="tag">voz do colaborador</span></h2>
+<h2>Votos &amp; comentários <span class="tag">todos os votantes</span></h2>
 <div class="coments" id="coments"><div class="estado">Carregando…</div></div>
 
 <h2 id="tituloUsuarios" style="display:none">Gerenciar acessos <span class="tag">admin</span></h2>
@@ -223,15 +223,15 @@ function render(){
   barras(document.getElementById("porEvento"), grupo(rows,"evento"));
   barras(document.getElementById("porSetor"), grupo(rows,"setor"));
   renderRanking(); renderCustos(); renderComparativo(); renderFrequencia(); checarAnomalias(rows);
-  const cm = rows.filter(r=>r.comentario && r.comentario.trim())
+  const cm = rows.slice()
     .sort((a,b)=> new Date(b.criado_em)-new Date(a.criado_em));
   document.getElementById("coments").innerHTML = cm.length ? cm.map(r=>`
     <div class="coment ${faixa(r.nota)==='alta'?'':faixa(r.nota)}">
       <div class="meta"><span class="nota">Nota ${r.nota}</span><span>${r.evento}</span><span>${r.setor||"—"}</span>
       <span>${new Date(r.criado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></div>
-      ${escapeHtml(r.comentario)}
+      ${r.comentario && r.comentario.trim() ? escapeHtml(r.comentario) : '<span style="color:var(--muted);font-style:italic">Sem comentário</span>'}
     </div>`).join("")
-    : '<div class="estado">Nenhum comentário para esses filtros — só notas.</div>';
+    : '<div class="estado">Nenhuma avaliação para esses filtros.</div>';
 }
 
 function popularFiltros(){
